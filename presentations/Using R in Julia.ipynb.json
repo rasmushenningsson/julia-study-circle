@@ -1,0 +1,1101 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#Using R in Julia\n",
+    "##Why use R in Julia?\n",
+    "Julia is a very fast and intuitive programming language, yet\n",
+    "1. it is still young\n",
+    "2. it is not yet the favourite programming language for statisticians.\n",
+    "Therefore, one might want, from time to time, to use an R function that performs a given test which is not yet implemented in Julia.\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##How to use R in Julia\n",
+    "There are thus far, to my knowledge, two packages which can be used in Julia to call R:\n",
+    "- \"Rif\", which dates from 2012 and has not been updated since; it is obsolete and I don't recommend it;\n",
+    "- \"RCall\", which works quite nicely, and will be presented herein.\n",
+    "\n",
+    "Author said: *\"It is written entirely in Julia. There is absolutely no \"glue\" code written in a compiled language like C or C++. As I said, this may not mean much to you unless you have tried to do something like this, in which case it is astonishing.\"*\n",
+    "\n",
+    "###RCall requirements and installation\n",
+    "RCall requires that a recent version of R, at least 3.2.0, be installed. Packages can be there already or can be installed later. \n",
+    "In Juliabox, R is already installed. However, only the default libraries are installed, and it is, to my knowledge, not possible to install new libraries on Juliabox.\n",
+    "If R has been installed, it is possible to install RCall.jl from within Julia, using"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "INFO: Nothing to be done\n"
+     ]
+    }
+   ],
+   "source": [
+    "Pkg.add(\"RCall\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "If you have updated the R installation, you may need to rebuild RCall via"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "Pkg.build(\"RCall\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Start using RCall using"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "using(RCall)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Simple R expressions and R outputs: playing in R independently of Julia\n",
+    "\n",
+    "###Basics: the rprint function \n",
+    "Everything you run will be \"added\" as if you were running an R console. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[1] 3\n"
+     ]
+    }
+   ],
+   "source": [
+    "rprint(\"1+2\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[1] 0.78097673 0.07217773 0.44840792\n"
+     ]
+    }
+   ],
+   "source": [
+    "rprint(\"a=rnorm(3)\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[1] \"MASS\"      \"stats\"     \"graphics\"  \"grDevices\" \"utils\"     \"datasets\" \n",
+      "[7] \"methods\"   \"base\"     \n"
+     ]
+    }
+   ],
+   "source": [
+    "rprint(\"library(MASS)\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Call:\n",
+      "lm(formula = bwt ~ ., data = birthwt)\n",
+      "\n",
+      "Coefficients:\n",
+      "(Intercept)          low          age          lwt         race        smoke  \n",
+      "   3612.508    -1131.217       -6.245        1.051     -100.905     -174.116  \n",
+      "        ptl           ht           ui          ftv  \n",
+      "     81.340     -181.955     -336.776       -7.578  \n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "rprint(\"fit = lm(bwt ~ ., data = birthwt)\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Call:\n",
+      "lm(formula = bwt ~ ., data = birthwt)\n",
+      "\n",
+      "Coefficients:\n",
+      "(Intercept)          low          age          lwt         race        smoke  \n",
+      "   3612.508    -1131.217       -6.245        1.051     -100.905     -174.116  \n",
+      "        ptl           ht           ui          ftv  \n",
+      "     81.340     -181.955     -336.776       -7.578  \n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "rprint(\"fit\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "the latter being equivalent to"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Call:\n",
+      "lm(formula = bwt ~ ., data = birthwt)\n",
+      "\n",
+      "Coefficients:\n",
+      "(Intercept)          low          age          lwt         race        smoke  \n",
+      "   3612.508    -1131.217       -6.245        1.051     -100.905     -174.116  \n",
+      "        ptl           ht           ui          ftv  \n",
+      "     81.340     -181.955     -336.776       -7.578  \n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "rprint(:fit)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###Confusing syntax\n",
+    "Beware: one cannot use the $ sign as is, but should use \\$ instead."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      " [1] \"assign\"        \"call\"          \"coefficients\"  \"df.residual\"  \n",
+      " [5] \"effects\"       \"fitted.values\" \"model\"         \"qr\"           \n",
+      " [9] \"rank\"          \"residuals\"     \"terms\"         \"xlevels\"      \n"
+     ]
+    },
+    {
+     "ename": "LoadError",
+     "evalue": "LoadError: RCall.jl Error: object 'fitStatsBase.fitted.values' not found\n\nwhile loading In[9], in expression starting on line 2",
+     "output_type": "error",
+     "traceback": [
+      "LoadError: RCall.jl Error: object 'fitStatsBase.fitted.values' not found\n\nwhile loading In[9], in expression starting on line 2",
+      ""
+     ]
+    }
+   ],
+   "source": [
+    "rprint(\"ls(fit)\")\n",
+    "rprint(\"fit$fitted.values\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "      85       86       87       88       89       91       92       93 \n",
+      "3146.460 3243.797 3315.309 2967.862 3000.703 3308.908 3490.591 3304.250 \n",
+      "      94       95       96       97       98       99      100      101 \n",
+      "3278.010 3293.819 3290.933 3341.136 3090.242 2964.248 3330.125 3330.125 \n",
+      "     102      103      104      105      106      107      108      109 \n",
+      "3419.971 3282.584 2974.175 3281.104 3221.901 3063.541 3491.402 3260.988 \n",
+      "     111      112      113      114      115      116      117      118 \n",
+      "2927.793 3512.174 3359.483 3472.913 3250.694 3415.661 3415.661 3355.909 \n",
+      "     119      120      121      123      124      125      126      127 \n",
+      "3218.871 3510.726 3385.882 3288.292 3348.645 3299.129 3354.593 3238.320 \n",
+      "     128      129      130      131      132      133      134      135 \n",
+      "3284.625 3576.340 3396.048 3548.538 2982.843 2982.843 3420.112 3329.803 \n",
+      "     136      137      138      139      140      141      142      143 \n",
+      "3467.371 3087.575 3310.738 3300.619 3336.660 3234.771 3311.944 3325.428 \n",
+      "     144      145      146      147      148      149      150      151 \n",
+      "2783.308 3283.165 3293.092 3328.637 3328.637 3276.009 3275.464 3483.809 \n",
+      "     154      155      156      159      160      161      162      163 \n",
+      "3275.699 3099.414 3265.561 3177.978 3353.148 3505.471 3480.429 3084.497 \n",
+      "     164      166      167      168      169      170      172      173 \n",
+      "3105.268 3428.434 3379.385 3538.858 3494.967 3329.436 3238.791 3567.564 \n",
+      "     174      175      176      177      179      180      181      182 \n",
+      "3504.249 3490.344 3237.991 3318.305 3295.367 3155.572 3301.438 3504.530 \n",
+      "     183      184      185      186      187      188      189      190 \n",
+      "3470.615 3497.945 3501.437 3304.258 3283.750 3188.397 3379.385 3464.733 \n",
+      "     191      192      193      195      196      197      199      200 \n",
+      "3484.693 3373.256 3373.256 3460.588 3469.696 3230.171 3356.803 3475.942 \n",
+      "     201      202      203      204      205      206      207      208 \n",
+      "3310.951 3325.792 3434.325 3551.747 3335.981 3459.055 3491.997 3315.864 \n",
+      "     209      210      211      212      213      214      215      216 \n",
+      "3277.786 3084.065 3391.173 3268.118 3565.992 3271.493 3466.379 3302.091 \n",
+      "     217      218      219      220      221      222      223      224 \n",
+      "3545.105 3315.501 3493.685 3509.725 3476.884 3428.906 3545.369 3344.891 \n",
+      "     225      226        4       10       11       13       15       16 \n",
+      "3475.999 3352.199 1700.219 1983.910 1907.520 2032.134 1774.962 2167.533 \n",
+      "      17       18       19       20       22       23       24       25 \n",
+      "1792.482 2337.824 1985.405 2058.926 2116.725 2009.111 2143.255 2207.644 \n",
+      "      26       27       28       29       30       31       32       33 \n",
+      "2146.786 2223.790 2006.507 2300.556 2155.630 1848.212 2271.042 2353.725 \n",
+      "      34       35       36       37       40       42       43       44 \n",
+      "1868.494 2248.144 2375.473 1779.424 2083.791 1942.429 1910.651 1626.821 \n",
+      "      45       46       47       49       50       51       52       54 \n",
+      "2215.659 2206.511 2168.179 2221.641 2189.849 1953.043 2203.507 2117.049 \n",
+      "      56       57       59       60       61       62       63       65 \n",
+      "2193.581 2402.266 2150.597 2108.625 2065.784 1868.933 2160.998 2249.426 \n",
+      "      67       68       69       71       75       76       77       78 \n",
+      "2197.866 2203.432 2259.526 2284.221 2069.788 2141.243 2243.495 2104.470 \n",
+      "      79       81       82       83       84 \n",
+      "2116.046 2181.041 1959.568 2140.534 2007.001 \n"
+     ]
+    }
+   ],
+   "source": [
+    "rprint(\"fit\\$fitted.values\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Also, \" \" (double quotes) and ' ' (single quotes) are synonyms in R, but not in Julia. Inside an rprint, use ' ' for character strings."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "rprint(\"a=\"ch\"\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "does not work, contrary to"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "rprint(\"a='ch'\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###Libraries\n",
+    "Libraries can simply be added as if in R. It can't work in Juliabox though.\n",
+    "###Plots\n",
+    "Plots from R can also be drawn."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "image/png": "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"
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "NULL\n"
+     ]
+    }
+   ],
+   "source": [
+    "rprint(\"plot(1:10,runif(10), xlab='x', ylab='y')\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "collapsed": false
+   },
+   "source": [
+    "It also works for ggplot."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "collapsed": true
+   },
+   "source": [
+    "###The reval function\n",
+    "The function **reval** returns, on top of the raw R output, the type of R object that is returned.\n",
+    "R types (in Julia) are all of the forme Rcall.XXXSxp. Examples:\n",
+    "- Rcall.StrSxp: string vector\n",
+    "- Rcall.IntSxp: integer vector\n",
+    "- RCall.RealSxp: real vector\n",
+    "- RCall.NilSxp: R NULL value\n",
+    "- RCall.VecSxp: R list (i.e. Array{Any,1})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "RCall.RObject{RCall.VecSxp}\n",
+       "\n",
+       "Call:\n",
+       "lm(formula = bwt ~ ., data = birthwt)\n",
+       "\n",
+       "Coefficients:\n",
+       "(Intercept)          low          age          lwt         race        smoke  \n",
+       "   3612.508    -1131.217       -6.245        1.051     -100.905     -174.116  \n",
+       "        ptl           ht           ui          ftv  \n",
+       "     81.340     -181.955     -336.776       -7.578  \n",
+       "\n"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "reval(\"fit = lm(bwt ~ ., data = birthwt)\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Converting Julia objects to R objects\n",
+    "\n",
+    "To see what kind of object you will get from a Julia object, use RObject.\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "RCall.RObject{RCall.IntSxp}\n",
+       "[1] 1\n"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "RObject(1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "RCall.RObject{RCall.IntSxp}\n",
+       "[1] 1 2 3\n"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "RObject([1,2,3])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "RCall.RObject{RCall.IntSxp}\n",
+       "[1] 1 2 3\n"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "RObject(1:3)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "However, RObject does not assign the value to an R variable. For example"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "ename": "LoadError",
+     "evalue": "LoadError: RCall.jl Error: object 'a' not found\n\nwhile loading In[8], in expression starting on line 2",
+     "output_type": "error",
+     "traceback": [
+      "LoadError: RCall.jl Error: object 'a' not found\n\nwhile loading In[8], in expression starting on line 2",
+      "",
+      " in error at error.jl:22",
+      " in reval_p at /home/juser/.julia/v0.4/RCall/src/iface.jl:14",
+      " in rprint at /home/juser/.julia/v0.4/RCall/src/iface.jl:115",
+      " in rprint at /home/juser/.julia/v0.4/RCall/src/iface.jl:107"
+     ]
+    }
+   ],
+   "source": [
+    "a = RObject([1,2,3])\n",
+    "rprint(:a)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Instead, one should use **@rput**, which copies a Julia variable (that can be of relatively \"any\" Julia type) to an R variable with the same name. The variable is then \"run\" in R."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "3-element Array{Int64,1}:\n",
+       " 1\n",
+       " 2\n",
+       " 3"
+      ]
+     },
+     "execution_count": 10,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "a = [1,2,3]\n",
+    "@rput(a)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[1] 1 2 3\n"
+     ]
+    }
+   ],
+   "source": [
+    "rprint(:a)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Converting R objects to Julia objects"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "1.0"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rcopy(\"1\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "3-element Array{Float64,1}:\n",
+       " 0.367911\n",
+       " 0.190173\n",
+       " 0.308766"
+      ]
+     },
+     "execution_count": 13,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rcopy(\"runif(3)\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "3-element Array{Int32,1}:\n",
+       " 1\n",
+       " 2\n",
+       " 3"
+      ]
+     },
+     "execution_count": 14,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rcopy(:a)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "3-element Array{Int32,1}:\n",
+       " 1\n",
+       " 2\n",
+       " 3"
+      ]
+     },
+     "execution_count": 15,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rcopy(\"1:3\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "3-element Array{Float64,1}:\n",
+       " 1.0\n",
+       " 2.0\n",
+       " 3.0"
+      ]
+     },
+     "execution_count": 17,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rcopy(\"c(1,2,3)\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "One can force the (Julia) destination type:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "3-element Array{Int64,1}:\n",
+       " 1\n",
+       " 2\n",
+       " 3"
+      ]
+     },
+     "execution_count": 19,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rcopy(Array{Int64,1},\"c(1,2,3)\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "But not every R type can be converted to a Julia type."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "Dict{Symbol,Any} with 12 entries:\n",
+       "  symbol(\"fitted.values\") => [3146.46,3243.8,3315.31,2967.86,3000.7,3308.91,349…\n",
+       "  :model                  => 189x10 DataFrames.DataFrame…\n",
+       "  :xlevels                => Dict{Symbol,Any}()\n",
+       "  :effects                => [-40481.4,-7846.86,-30.4752,546.067,-829.545,-1036…\n",
+       "  :assign                 => Int32[0,1,2,3,4,5,6,7,8,9]\n",
+       "  :coefficients           => [3612.5084754236923,-1131.2165220078946,-6.2454473…\n",
+       "  :rank                   => 10\n",
+       "  :residuals              => [-623.46,-692.797,-758.309,-373.862,-400.703,-686.…\n",
+       "  :qr                     => Dict{Symbol,Any}(:pivot=>Int32[1,2,3,4,5,6,7,8,9,1…\n",
+       "  :terms                  => Ptr{RCall.LangSxp} @0x00000000035c4e20\n",
+       "  symbol(\"df.residual\")   => 179\n",
+       "  :call                   => Ptr{RCall.LangSxp} @0x0000000004ed2d20"
+      ]
+     },
+     "execution_count": 20,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rcopy(:fit)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We usually do not want the whole object but are interested in a few values, that can be extracted then converted. \n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "189-element Array{Float64,1}:\n",
+       " 3146.46\n",
+       " 3243.8 \n",
+       " 3315.31\n",
+       " 2967.86\n",
+       " 3000.7 \n",
+       " 3308.91\n",
+       " 3490.59\n",
+       " 3304.25\n",
+       " 3278.01\n",
+       " 3293.82\n",
+       " 3290.93\n",
+       " 3341.14\n",
+       " 3090.24\n",
+       "    ⋮   \n",
+       " 2203.43\n",
+       " 2259.53\n",
+       " 2284.22\n",
+       " 2069.79\n",
+       " 2141.24\n",
+       " 2243.49\n",
+       " 2104.47\n",
+       " 2116.05\n",
+       " 2181.04\n",
+       " 1959.57\n",
+       " 2140.53\n",
+       " 2007.0 "
+      ]
+     },
+     "execution_count": 21,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "rcopy(\"fit\\$fitted.values\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Similarly to @rput, there is an **@rget**, that allows to copy an R variable to Julia (with the same name).\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "189-element Array{Float64,1}:\n",
+       " 3146.46\n",
+       " 3243.8 \n",
+       " 3315.31\n",
+       " 2967.86\n",
+       " 3000.7 \n",
+       " 3308.91\n",
+       " 3490.59\n",
+       " 3304.25\n",
+       " 3278.01\n",
+       " 3293.82\n",
+       " 3290.93\n",
+       " 3341.14\n",
+       " 3090.24\n",
+       "    ⋮   \n",
+       " 2203.43\n",
+       " 2259.53\n",
+       " 2284.22\n",
+       " 2069.79\n",
+       " 2141.24\n",
+       " 2243.49\n",
+       " 2104.47\n",
+       " 2116.05\n",
+       " 2181.04\n",
+       " 1959.57\n",
+       " 2140.53\n",
+       " 2007.0 "
+      ]
+     },
+     "execution_count": 22,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "reval(\"b = fit\\$fitted.values\")\n",
+    "@rget(b)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Tip: creating small functions that take and return Julia arguments\n",
+    "\n",
+    "One does not want to code entire parts of their Julia code in R. Therefore, it seems a good idea to create small functions that take and return Julia arguments and that call R in between. Consequently, the rest of the code is R-free."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "correlation (generic function with 4 methods)"
+      ]
+     },
+     "execution_count": 11,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "function correlation(x::Array{Float64,1},y::Array{Float64,1},method)\n",
+    "    @rput(x,y,method)\n",
+    "    reval(\"res = cor.test(x,y,method=method)\\$p.value\")\n",
+    "    @rget(res)\n",
+    "end"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.3333333333333333"
+      ]
+     },
+     "execution_count": 16,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "correlation([1.0,2.0,3.0],[1.0,2.0,3.0],\"spearman\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "0.1627759086331455"
+      ]
+     },
+     "execution_count": 20,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "correlation(rand(10),rand(10),\"pearson\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Other (potentially) interesting functions\n",
+    "\n",
+    "**rcall(fun, args)** allows to call an R function, passing parameters that are Julia objects, and returning an R object. I don't particularly recommend it, for it is not clear how the Julia objects were converted and I would rather not mix Julia and R objects on a same command line. "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [
+    {
+     "data": {
+      "image/png": "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"
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/plain": [
+       "RCall.RObject{RCall.NilSxp}\n",
+       "NULL\n"
+      ]
+     },
+     "execution_count": 24,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X = rand(10)\n",
+    "rcall(:plot, X, sin(5*X), xlab=\"x\", ylab=\"y\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##Resources\n",
+    "- all RCall functions and types: http://rcalljl.readthedocs.org/en/latest/api/RCall/\n",
+    "- some examples: http://www.r-bloggers.com/monthofjulia-day-25-interfacing-with-other-languages/, https://cloud.sagemath.com/projects/a6645bae-a4ce-4c6a-8a3a-0928abe239c8/files/2015-04-13-133603.html"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Julia 0.4.3",
+   "language": "julia",
+   "name": "julia-0.4"
+  },
+  "language_info": {
+   "file_extension": ".jl",
+   "mimetype": "application/julia",
+   "name": "julia",
+   "version": "0.4.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 0
+}
